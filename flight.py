@@ -104,6 +104,9 @@ def key_control(hero):
         if event.type == QUIT:
             print("exit")
             exit()
+        elif event.type == KEYDOWN:
+            if event.key == K_SPACE or event.key == K_j:
+                hero.fire()
 
     key_pressed = pygame.key.get_pressed()
     if key_pressed[K_s] or key_pressed[K_DOWN]:
