@@ -104,22 +104,23 @@ def key_control(hero):
         if event.type == QUIT:
             print("exit")
             exit()
-        elif event.type == KEYDOWN:
-            if event.key == K_w or event.key == K_UP:
-                print("up")
-                hero.move_up()
-            elif event.key == K_s or event.key == K_DOWN:
-                print("down")
-                hero.move_down()
-            elif event.key == K_a or event.key == K_LEFT:
-                print("left")
-                hero.move_left()
-            elif event.key == K_d or event.key == K_RIGHT:
-                print("right")
-                hero.move_right()
-            elif event.key == K_k or event.key == K_SPACE:
-                print("space")
-                hero.fire()
+
+    key_pressed = pygame.key.get_pressed()
+    if key_pressed[K_s] or key_pressed[K_DOWN]:
+        print("down")
+        hero.move_down()
+
+    if key_pressed[K_w] or key_pressed[K_UP]:
+        print("up")
+        hero.move_up()
+
+    if key_pressed[K_a] or key_pressed[K_LEFT]:
+        print("left")
+        hero.move_left()
+
+    if key_pressed[K_d] or key_pressed[K_RIGHT]:
+        print("right")
+        hero.move_right()
 
 
 def main():
@@ -131,7 +132,10 @@ def main():
     hero = Hero(screen)
     enemy = Enemy(screen)
 
+    clock = pygame.time.Clock()
     while True:
+        clock.tick(60)
+
         screen.blit(background, (0, 0))
 
         hero.display_hero()
