@@ -1,12 +1,23 @@
 # -*- coding: utf-8 -*-
 
 import pygame
-import time
 from pygame.locals import *
 import random
 
 screen_width = 480
 screen_height = 852
+
+hero_sprite_group = pygame.sprite.Group()
+enemy_sprite_group = pygame.sprite.Group()
+
+pygame.init()
+pygame.mixer.init()
+
+background_bgm = pygame.mixer.Sound("./resources/background.ogg")
+fire_bgm = pygame.mixer.Sound("./resources/fire.ogg")
+explosion_bgm = pygame.mixer.Sound("resources/explosion.ogg")
+
+font = pygame.font.Font(None, 30)
 
 
 class Hero(pygame.sprite.Sprite):
@@ -47,14 +58,13 @@ class Hero(pygame.sprite.Sprite):
             self.rect.y += 5
 
     def fire(self):
+        fire_bgm.play()
         self.bullets.add(Bullet(self.screen, self.rect.x, self.rect.y))
 
 
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, screen, x, y, *groups):
         super().__init__(*groups)
-        # self.x = x + 40
-        # self.y = y
         self.width = 15
         self.height = 15
         self.screen = screen
@@ -80,8 +90,6 @@ class Bullet(pygame.sprite.Sprite):
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, screen, *groups):
         super().__init__(*groups)
-        # self.x = 0
-        # self.y = 0
         self.screen = screen
         self.image = pygame.image.load("./resources/enemy.png").convert_alpha()
         self.image = pygame.transform.scale(self.image, (100, 100))
@@ -89,7 +97,6 @@ class Enemy(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = random.randrange(0, screen_width - self.rect.width)
         self.bullets = []
-        self.direction = "down"
 
     def display(self):
         self.screen.blit(self.image, (self.rect.x, self.rect.y))
@@ -128,7 +135,7 @@ def key_control(hero):
         hero.move_right()
 
 
-def check_collide(hero, enemy):
+def check_hit_enemy_collide(hero, enemy):
     if len(hero.bullets) == 0:
         return False
 
@@ -139,34 +146,69 @@ def check_collide(hero, enemy):
         return False
 
 
+def check_hero_enemy_collide(hero):
+    if len(enemy_sprite_group) == 0:
+        return False
+
+    collide_list = pygame.sprite.spritecollide(hero, enemy_sprite_group, False)
+    if len(collide_list) > 0:
+        return True
+    else:
+        return False
+
+
+def update_score(screen, score):
+    score_text = font.render("Score : {}".format(score), 1, (0, 0, 0))
+    score_text_pos = (5, 5)
+    screen.blit(score_text, score_text_pos)
+
+
 def main():
+    score = 0
     screen = pygame.display.set_mode((screen_width, screen_height), 0, 32)
+    pygame.display.set_caption("Flight Game")
 
     background = pygame.image.load("./resources/background.jpeg")
     background = pygame.transform.scale(background, (480, 852))
 
+    background_bgm.play()
+
     hero = Hero(screen)
+    hero_sprite_group.add(hero)
     enemy = Enemy(screen)
+    enemy_sprite_group.add(enemy)
 
     clock = pygame.time.Clock()
     while True:
         clock.tick(60)
 
         screen.blit(background, (0, 0))
+        update_score(screen, score)
 
         hero.display_hero()
 
         enemy.display()
         enemy.move()
-
-        if check_collide(hero, enemy):
+        if enemy.rect.y > screen_height:
+            enemy_sprite_group.remove(enemy)
             enemy = Enemy(screen)
+            enemy_sprite_group.add(enemy)
+
+        if check_hit_enemy_collide(hero, enemy):
+            explosion_bgm.play()
+            score += 1
+            enemy_sprite_group.remove(enemy)
+            enemy = Enemy(screen)
+            enemy_sprite_group.add(enemy)
+
+        if check_hero_enemy_collide(hero):
+            die_text = font.render("You Die", 1, (0, 0, 0))
+            die_text_pos = (screen_width / 2, screen_height / 2)
+            screen.blit(die_text, die_text_pos)
 
         key_control(hero)
 
         pygame.display.update()
-
-        time.sleep(0.01)
 
 
 if __name__ == "__main__":
