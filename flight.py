@@ -112,7 +112,7 @@ def key_control(hero):
     for event in pygame.event.get():
         if event.type == QUIT:
             print("exit")
-            exit()
+            return True
         elif event.type == KEYDOWN:
             if event.key == K_SPACE or event.key == K_j:
                 hero.fire()
@@ -133,6 +133,8 @@ def key_control(hero):
     if key_pressed[K_d] or key_pressed[K_RIGHT]:
         # print("right")
         hero.move_right()
+
+    return False
 
 
 def check_hit_enemy_collide(hero, enemy):
@@ -206,7 +208,8 @@ def main():
             die_text_pos = (screen_width / 2, screen_height / 2)
             screen.blit(die_text, die_text_pos)
 
-        key_control(hero)
+        if  key_control(hero):
+            return
 
         pygame.display.update()
 
